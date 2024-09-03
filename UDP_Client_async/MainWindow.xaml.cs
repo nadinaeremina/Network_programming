@@ -12,11 +12,10 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.Threading;
 using System.Net.Sockets;
 using System.Net;
 
-namespace UDP_Client
+namespace UDP_Client_async
 {
     /// <summary>
     /// Логика взаимодействия для MainWindow.xaml
@@ -28,20 +27,26 @@ namespace UDP_Client
             InitializeComponent();
         }
 
+        IAsyncResult Res;
+
         private void SendButton_Click(object sender, RoutedEventArgs e)
         {
             Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.IP);
 
             // тк здесь мы используем UDP, а он не устанавливает постоянного соединения - 's.Connect(ep)' - не нужно,
-            // мы вместо этого у 'SendTo' и 'ReceiveTO' в качестве одного из пар-ов передаем 'EndPoint'
-            socket.SendTo(Encoding.Unicode.GetBytes(MessageTB.Text), new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1024));
-            // первым арг-ом - указываем само сообщение, вторым - куда мы посылаем
+            // мы вместо этого у 'BeginSendTo' и 'BeginReceiveTO' в качестве одного из пар-ов передаем 'EndPoint'
+            Res = socket.BeginSendTo(Encoding.Unicode.GetBytes(MessageTB.Text), 0, MessageTB.Text.Length,
+                SocketFlags.None, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1024), new AsyncCallback(SendCompleted), socket);
 
-            // тк у нас нет постоянного соед-ия - мы сокеты сразу закрываем
+        }
+
+        private void SendCompleted(IAsyncResult ia)
+        {
+            Socket socket = (Socket)ia.AsyncState;
+
+            socket.EndSend(Res);
             socket.Shutdown(SocketShutdown.Send);
             socket.Close();
         }
     }
 }
-
-
