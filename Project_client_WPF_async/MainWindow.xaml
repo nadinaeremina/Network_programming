@@ -1,0 +1,22 @@
+﻿<Window x:Class="Project_client_WPF_async.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Project_client_WPF_async"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <Button HorizontalAlignment="Center" VerticalAlignment="Center" Height="50" Click="Button_Click_2">Создать запрос</Button>
+        <Button Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Height="50" Width="90" Click="Button_Click" >Отправить</Button>
+        <StackPanel Grid.Row="1" Orientation="Vertical" Height="140" VerticalAlignment="Top">
+            <Label HorizontalAlignment="Center">Сообщение:</Label>
+            <TextBox Width="100" Grid.Row="2" x:Name="txt_label" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBox>
+        </StackPanel>
+    </Grid>
+</Window>

@@ -12,18 +12,15 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.Threading;
 using System.Net.Sockets;
 using System.Net;
 
-namespace UDP_Server_async
+namespace Project_server_WPF_async
 {
-    // у 'IAsyncResult' есть св-во 'AsyncState' - в него можно передать 1 об-т
-    // но нам нужны аж три поля - поэтому мы создаем классс
     public class StateObject
     {
         public Socket WorkSocket { get; set; }
-        public byte[] Buffer = new byte[1024]; 
+        public byte[] Buffer = new byte[65536];
     }
 
     public partial class MainWindow : Window
@@ -35,49 +32,51 @@ namespace UDP_Server_async
 
         IAsyncResult Res;
 
+        Create create = new Create();
         public MainWindow()
         {
             InitializeComponent();
+            create.WindowStartupLocation = WindowStartupLocation.CenterScreen;
         }
 
         void Add_Text(string text)
         {
-            textLabel.Text = textLabel.Text + text + "\n";
+            txt_label.Text = txt_label.Text + text + "\n";
         }
 
-        private void StartButton_Click(object sender, RoutedEventArgs e)
+        private void Button_Click(object sender, RoutedEventArgs e)
         {
-            // чтобы второй раз сокет не перезаписывался
-            if (socket != null)
-                return;
-
-            clientEP = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1024); 
-
-            socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.IP);
-
-            // биндим к порту, который будем прослушивать
-            socket.Bind(clientEP);
-
-            StateObject state = new StateObject();
-            state.WorkSocket = socket;
-
-            // clientEP создастся внутри этого метода
-            Res = socket.BeginReceiveFrom(state.Buffer, 0, state.Buffer.Length, SocketFlags.None, 
-                ref clientEP, new AsyncCallback(ReceiveCompleted), state);
-            // последним арг-ом передается то, что будет у 'IAsyncResult' в св-ве 'AsyncState'
-            // это позволяет передать доп инф-цию в метод, кот яв-ся колбеком
-            // колбек - это ф-ция, кот вызывается, когда функция 'BeginReceiveFrom' завершится
-            // те когда 'BeginReceiveFrom' завершится - у нас вызовется ф-ция 'ReceiveCompleted',
-            // он вызывается без пар-ов, тк у него есть свой пар-р - 'IAsyncResult'
+            create.ShowDialog();
         }
 
-        private void ReceiveCompleted(IAsyncResult ia)
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            if (create.My_ip.Length > 0 && create.My_port.ToString().Length > 0)
+            {
+                IPAddress ip = IPAddress.Parse(create.My_ip);
+
+                clientEP = new IPEndPoint(ip, create.My_port);
+                socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.IP);
+
+                socket.Bind(clientEP);
+
+                StateObject state = new StateObject();
+                state.WorkSocket = socket;
+
+                Res = socket.BeginReceiveFrom(state.Buffer, 0, state.Buffer.Length, SocketFlags.None,
+                ref clientEP, new AsyncCallback(ReceiveCompleted), state);
+            }
+            else
+                return;
+        }
+
+        private void ReceiveCompleted(IAsyncResult ar)
         {
             try
             {
                 // в 'AsyncState' может наход-ся экземпляр любого класса или стр-ры
                 // по факту здесь нах-ся то, что мы передаем в 'BeginReceiveFrom' последним арг-ом
-                StateObject so = (StateObject)ia.AsyncState;
+                StateObject so = (StateObject)ar.AsyncState;
 
                 // достаем из него сокет
                 Socket clientSocket = so.WorkSocket;
@@ -87,7 +86,7 @@ namespace UDP_Server_async
                     return;
 
                 // начали там, где 'BeginReceiveFrom', а здесь мы его завершаем
-                int bufferLength = clientSocket.EndReceiveFrom(ia, ref clientEP);
+                int bufferLength = clientSocket.EndReceiveFrom(ar, ref clientEP);
                 // 'EndReceiveFrom' - Завершает отложенное асинхронное чтение с определенной конечной точки
                 // 'Res' - Объект IAsyncResult, в котором хранятся сведения о состоянии и любые данные,
                 // определенные пользователем, для этой асинхронной операции
@@ -97,15 +96,12 @@ namespace UDP_Server_async
 
                 string str = $"Получено от {strClient}: {Encoding.Unicode.GetString(so.Buffer, 0, bufferLength)}";
 
-                textLabel.Dispatcher.BeginInvoke(new AddTextDelegate(Add_Text), str);
+                txt_label.Dispatcher.BeginInvoke(new AddTextDelegate(Add_Text), str);
             }
             catch (SocketException)
             {
-
                 throw;
             }
         }
-
-        // в ассинхрнном способе нет необ-ти писать 'Thread'
     }
 }
