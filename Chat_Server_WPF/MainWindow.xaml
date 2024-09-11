@@ -11,12 +11,13 @@
             <StackPanel>
                 <TextBlock Height="31" HorizontalAlignment="Center" FontSize="16">Sending...</TextBlock>
                 <TextBox x:Name="OutputDataTB" IsReadOnly="False" 
-                   TextWrapping="Wrap" AcceptsReturn="True" Width="400" Height="375" TextChanged="OutputDataTB_TextChanged"></TextBox>
+                   TextWrapping="Wrap" AcceptsReturn="True" Width="400" Height="355" TextChanged="OutputDataTB_TextChanged"></TextBox>
             </StackPanel>
-            <StackPanel>
+            <StackPanel Height="437" Width="403">
                 <TextBlock Height="31" HorizontalAlignment="Center" FontSize="16">Receiving...</TextBlock>
                 <TextBox x:Name="InputDataTB" IsReadOnly="True" 
-                   TextWrapping="Wrap" AcceptsReturn="True"  Width="400" Height="376" TextChanged="InputDataTB_TextChanged"></TextBox>
+                   TextWrapping="Wrap" AcceptsReturn="True"  Width="400" Height="353" TextChanged="InputDataTB_TextChanged"></TextBox>
+                <Button x:Name="Receive_btn" Click="Receive_btn_Click" Height="44" Width="240">Receive</Button>
             </StackPanel>
         </StackPanel>
     </Grid>

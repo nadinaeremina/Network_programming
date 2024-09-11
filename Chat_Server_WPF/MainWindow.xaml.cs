@@ -32,21 +32,16 @@ namespace Chat_Server_WPF
 
         // создаем поток, который будет запускать 'MulticastSend'
         Thread Sender = new Thread(new ThreadStart(MulticastSend));
-        Thread Receiver;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            Receiver = new Thread(new ThreadStart(Receive));
-
             // ставим поток на фон
             Sender.IsBackground = true;
-            Receiver.IsBackground = true;
 
             // запускаем // приложение блокировать не будет - будет работать на фоне
             Sender.Start();
-            //Receiver.Start();
         }
 
         static void MulticastSend()
@@ -63,9 +58,8 @@ namespace Chat_Server_WPF
                 // достать IP, если нужно (будет строка соед-ия)
                 // sock.RemoteEndPoint.ToString();
 
-
                 // создаем ip-адрес
-                IPAddress dest = IPAddress.Parse("224.5.6.7");
+                IPAddress dest = IPAddress.Parse("224.5.5.5");
 
                 // устанавливаем опции
 
@@ -96,40 +90,6 @@ namespace Chat_Server_WPF
             }
         }
 
-        void Receive()
-        {
-            while (true)
-            {
-                Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-
-                // создаем 'EndPoint' для прослушки
-                IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 4567);
-                // IPAddress.Any - будет прослушивать все, порт как у сервера
-
-                // биндим сокет к нашему 'IPEndPoint'
-                sock.Bind(ipep);
-
-                // создаем новый ip-адрес
-                IPAddress ip = IPAddress.Parse("224.5.5.4");
-
-                sock.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(ip, IPAddress.Any));
-                // если какой-то сокет из этого ip - делает рассылку - то все остальные сокеты будут ее получать
-                // здесь мы подписываем сокет на адрес, который описывает multicast - 'ip'
-                // 'IPAddress.Any' ждем сигнал от любого адреса с этой группы, от всех, кто подписался
-
-                byte[] buff = new byte[1024];
-
-                // здесь пр-ма встанет и будет ждать, пока не прийдет ответ от сервера
-                sock.Receive(buff);
-                // 'Receive' измеряет размер сообщения, в то время как буффер яв-ся массивом, поэтому он будет изменяться внутри метода
-
-                this.Dispatcher.Invoke(new AppendText(AppendTextToOutput), Encoding.Default.GetString(buff));
-                // обращаемся в главном потоке
-
-                sock.Close();
-            }
-        }
-
         private void OutputDataTB_TextChanged(object sender, TextChangedEventArgs e)
         {
             message = OutputDataTB.Text;
@@ -137,6 +97,35 @@ namespace Chat_Server_WPF
 
         private void InputDataTB_TextChanged(object sender, TextChangedEventArgs e)
         {
+        }
+
+        private void Receive_btn_Click(object sender, RoutedEventArgs e)
+        {
+            Sender.Abort(); // 1
+
+            Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+
+            IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 4567);
+
+            // биндим сокет к нашему 'IPEndPoint'
+            sock.Bind(ipep);
+
+            byte[] buff = new byte[1024];
+            int l;
+
+            do
+            {
+                // здесь пр-ма встанет и будет ждать, пока не прийдет ответ от сервера
+                l = sock.Receive(buff);
+                // 'Receive' измеряет размер сообщения, в то время как буффер яв-ся массивом, поэтому он будет изменяться внутри метода
+
+                InputDataTB.AppendText(Encoding.ASCII.GetString(buff, 0, l));
+
+            } while (l > 0);
+
+            sock.Close();
+
+            Sender.Start(); // 2
         }
     }
 }

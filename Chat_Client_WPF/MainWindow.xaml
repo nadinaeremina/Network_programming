@@ -7,13 +7,14 @@
         mc:Ignorable="d"
         Title="Client" Height="450" Width="800">
     <Grid>
-        <StackPanel>
+        <StackPanel Margin="0,0,0,-15">
             <TextBlock x:Name="txt_name" Height="34" FontSize="16" Margin="331,0,336,0">Enter your name:</TextBlock>
             <TextBox Width="200" Height="27"/>
             <StackPanel Orientation="Horizontal">
-                <StackPanel>
+                <StackPanel Height="357">
                     <TextBlock TextAlignment="Center" FontSize="16">Sending...</TextBlock>
-                    <TextBox x:Name="InputDataTB" IsReadOnly="False" Margin="5" Width="380"  Height="324" Foreground="DimGray" TextWrapping="Wrap" TextChanged="InputDataTB_TextChanged"/>
+                    <TextBox x:Name="InputDataTB" IsReadOnly="False" Margin="5" Width="380"  Height="292" Foreground="DimGray" TextWrapping="Wrap" TextChanged="InputDataTB_TextChanged"/>
+                    <Button x:Name="send_btn" Width="174" Content="To Send" Height="30" Click="send_btn_Click" />
                 </StackPanel>
                 <StackPanel>
                     <TextBlock TextAlignment="Center" FontSize="16">Receiving...</TextBlock>

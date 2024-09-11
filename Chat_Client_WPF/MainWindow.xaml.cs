@@ -27,7 +27,7 @@ namespace Chat_Client_WPF
         static int interval = 3000;
 
         // создаем 'thread' для прослушивания
-        Thread listener, sender_;
+        Thread listener;
 
         void AppendTextToOutput(string text)
         {
@@ -39,54 +39,40 @@ namespace Chat_Client_WPF
             InitializeComponent();
 
             listener = new Thread(new ThreadStart(Listen));
-            //sender_ = new Thread(new ThreadStart(Send));
 
             // ставим его на фон
             listener.IsBackground = true;
-            //sender_.IsBackground = true;
 
             // запускаем
             listener.Start();
-            // sender_.Start();
         }
 
-        void Send()
-        {
-            while (true)
-            {
-                // в начале каждого цикла мы ждем секунду
-                Thread.Sleep(interval);
+        //void Send()
+        //{
+        //    listener.Abort(); // 1
 
-                // создаем UDP-сокет
-                Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+        //    while (true)
+        //    {
+        //        // в начале каждого цикла мы ждем секунду
+        //        Thread.Sleep(interval);
 
-                // достать IP, если нужно (будет строка соед-ия)
-                // sock.RemoteEndPoint.ToString();
+        //        IPAddress ip = IPAddress.Parse("224.5.5.6");
+        //        IPEndPoint ep = new IPEndPoint(ip, 4567);
+        //        Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
-                // устанавливаем опции
-                sock.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 2);
-                // 'MulticastTimeToLive' - сколько роутеров он может пройти
-                // 1 // уровень // 2 // название опции // 3 // значение 
+        //        s.Connect(ep);
 
-                // создаем ip-адрес
-                IPAddress dest = IPAddress.Parse("224.5.5.4");
+        //        if (s.Connected)
+        //        {
+        //            s.Send(Encoding.ASCII.GetBytes(InputDataTB.Text));
+        //        }
 
-                // создаем еще один 'sock.SetSocketOption' // это будет сокет-мультикаст // для присоед-ия к группе
-                sock.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(dest));
-                // если какой-то сокет из этого ip - делает рассылку - то все остальные сокеты будут ее получать
+        //        s.Shutdown(SocketShutdown.Both);
+        //        s.Close();
+        //    }
 
-
-                IPEndPoint ipep = new IPEndPoint(dest, 4567);
-
-                // подключаемя к этому 'IPEndPoint'
-                sock.Connect(ipep);
-
-                // посылаем сообщение
-                sock.Send(Encoding.Default.GetBytes(message));
-
-                sock.Close();
-            }
-        }
+        //    listener.Start(); //2
+        //}
 
         private void InputDataTB_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -99,6 +85,9 @@ namespace Chat_Client_WPF
             // этот метод будет блокировать пр-му каждую секунду, пока сервер не пришлет ответ
             while (true)
             {
+                // в начале каждого цикла мы ждем секунду
+                Thread.Sleep(interval);
+
                 Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
                 // создаем 'EndPoint' для прослушки на входящие данные на любой IP адрес, на порт 4567
@@ -111,7 +100,7 @@ namespace Chat_Client_WPF
                 // Присоединяемся к multicast группе 224.5.6.7
 
                 // 1 // создаем новый ip-адрес
-                IPAddress ip = IPAddress.Parse("224.5.6.7");
+                IPAddress ip = IPAddress.Parse("224.5.5.5");
 
                 // 2
                 sock.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(ip, IPAddress.Any));
@@ -131,6 +120,24 @@ namespace Chat_Client_WPF
 
                 sock.Close();
             }
+        }
+
+        private void send_btn_Click(object sender, RoutedEventArgs e)
+        {
+            listener.Abort();
+
+            Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+
+            // тк здесь мы используем UDP, а он не устанавливает постоянного соединения - 's.Connect(ep)' - не нужно,
+            // мы вместо этого у 'SendTo' и 'ReceiveTO' в качестве одного из пар-ов передаем 'EndPoint'
+            s.SendTo(Encoding.Unicode.GetBytes(InputDataTB.Text), new IPEndPoint(IPAddress.Parse("224.5.5.6"), 4567));
+            // первым арг-ом - указываем само сообщение, вторым - куда мы посылаем
+
+            // тк у нас нет постоянного соед-ия - мы сокеты сразу закрываем
+            s.Shutdown(SocketShutdown.Send);
+            s.Close();
+
+            listener.Start();
         }
     }
 }
