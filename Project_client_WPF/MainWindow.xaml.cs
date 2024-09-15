@@ -24,6 +24,7 @@ namespace Project_client_WPF
         public MainWindow()
         {
             InitializeComponent();
+
             create.WindowStartupLocation = WindowStartupLocation.CenterScreen;
         }
 

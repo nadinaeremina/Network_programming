@@ -29,7 +29,6 @@ namespace Project_client_WPF_async
             socket.Close();
         }
 
-
         Create create = new Create();
 
         IAsyncResult Res;
@@ -37,6 +36,7 @@ namespace Project_client_WPF_async
         public MainWindow()
         {
             InitializeComponent();
+
             create.WindowStartupLocation = WindowStartupLocation.CenterScreen;
         }
 
@@ -48,42 +48,6 @@ namespace Project_client_WPF_async
             // мы вместо этого у 'BeginSendTo' и 'BeginReceiveTO' в качестве одного из пар-ов передаем 'EndPoint'
             Res = socket.BeginSendTo(Encoding.Unicode.GetBytes(txt_label.Text), 0, txt_label.Text.Length,
                 SocketFlags.None, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1024), new AsyncCallback(SendCompleted), socket);
-
-            //if (create.My_ip.Length > 0 && create.My_port.ToString().Length > 0)
-            //{
-            //    IPAddress ip = IPAddress.Parse(create.My_ip);
-            //    IPEndPoint ep = new IPEndPoint(ip, create.My_port);
-            //    Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.IP);
-
-            //    try
-            //    {
-            //        s.Connect(ep);
-
-            //        if (s.Connected)
-            //        {
-            //            s.Send(Encoding.ASCII.GetBytes("Hello, server!"));
-
-            //            byte[] buff = new byte[1024];
-            //            int l;
-
-            //            do
-            //            {
-            //                l = s.Receive(buff);
-            //                txt_label.AppendText(Encoding.ASCII.GetString(buff, 0, l));
-
-            //            } while (l > 0);
-            //        }
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        txt_label.AppendText(ex.ToString());
-            //    }
-            //    finally
-            //    {
-            //        s.Shutdown(SocketShutdown.Both);
-            //        s.Close();
-            //    }
-            //}
         }
         private void Button_Click_2(object sender, RoutedEventArgs e)
         {

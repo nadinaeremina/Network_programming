@@ -7,18 +7,12 @@
         mc:Ignorable="d"
         Title="Server" Height="450" Width="800">
     <Grid>
-        <StackPanel Orientation="Horizontal">
-            <StackPanel>
-                <TextBlock Height="31" HorizontalAlignment="Center" FontSize="16">Sending...</TextBlock>
-                <TextBox x:Name="OutputDataTB" IsReadOnly="False" 
-                   TextWrapping="Wrap" AcceptsReturn="True" Width="400" Height="355" TextChanged="OutputDataTB_TextChanged"></TextBox>
-            </StackPanel>
-            <StackPanel Height="437" Width="403">
-                <TextBlock Height="31" HorizontalAlignment="Center" FontSize="16">Receiving...</TextBlock>
-                <TextBox x:Name="InputDataTB" IsReadOnly="True" 
-                   TextWrapping="Wrap" AcceptsReturn="True"  Width="400" Height="353" TextChanged="InputDataTB_TextChanged"></TextBox>
-                <Button x:Name="Receive_btn" Click="Receive_btn_Click" Height="44" Width="240">Receive</Button>
-            </StackPanel>
+        <StackPanel Width="798">
+            <Button Click="Button_Click">Start</Button>
+            <TextBox x:Name="DataTB" IsReadOnly="False" 
+                   TextWrapping="Wrap" AcceptsReturn="True" Width="400" Height="355" ></TextBox>
+            <Button x:Name="send_btn" Height="44" Width="240" Click="send_btn_Click" >Send</Button>
+            <TextBox x:Name="test_txt"></TextBox>
         </StackPanel>
     </Grid>
 </Window>

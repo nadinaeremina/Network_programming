@@ -23,7 +23,7 @@ namespace UDP_Server_async
     public class StateObject
     {
         public Socket WorkSocket { get; set; }
-        public byte[] Buffer = new byte[1024]; 
+        public byte[] Buffer = new byte[1024];
     }
 
     public partial class MainWindow : Window
@@ -49,8 +49,10 @@ namespace UDP_Server_async
         {
             // чтобы второй раз сокет не перезаписывался
             if (socket != null)
+            {
                 return;
-
+            }
+                
             clientEP = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1024); 
 
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.IP);
@@ -84,7 +86,9 @@ namespace UDP_Server_async
 
                 // если нет клиентского сокета
                 if (socket == null)
+                {
                     return;
+                }
 
                 // начали там, где 'BeginReceiveFrom', а здесь мы его завершаем
                 int bufferLength = clientSocket.EndReceiveFrom(ia, ref clientEP);
@@ -101,11 +105,9 @@ namespace UDP_Server_async
             }
             catch (SocketException)
             {
-
                 throw;
             }
         }
-
         // в ассинхрнном способе нет необ-ти писать 'Thread'
     }
 }

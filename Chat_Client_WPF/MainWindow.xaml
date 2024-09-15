@@ -12,13 +12,8 @@
             <TextBox Width="200" Height="27"/>
             <StackPanel Orientation="Horizontal">
                 <StackPanel Height="357">
-                    <TextBlock TextAlignment="Center" FontSize="16">Sending...</TextBlock>
-                    <TextBox x:Name="InputDataTB" IsReadOnly="False" Margin="5" Width="380"  Height="292" Foreground="DimGray" TextWrapping="Wrap" TextChanged="InputDataTB_TextChanged"/>
+                    <TextBox x:Name="DataTB" IsReadOnly="False" Margin="5" Width="380"  Height="292" Foreground="DimGray" TextWrapping="Wrap" />
                     <Button x:Name="send_btn" Width="174" Content="To Send" Height="30" Click="send_btn_Click" />
-                </StackPanel>
-                <StackPanel>
-                    <TextBlock TextAlignment="Center" FontSize="16">Receiving...</TextBlock>
-                    <TextBox x:Name="OutputDataTB" IsReadOnly="true" Margin="5" Width="380" Height="322" Foreground="DimGray" TextWrapping="Wrap" />
                 </StackPanel>
             </StackPanel>
         </StackPanel>

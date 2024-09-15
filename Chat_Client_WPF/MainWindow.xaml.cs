@@ -18,20 +18,27 @@ using System.Windows.Shapes;
 
 namespace Chat_Client_WPF
 {
+    // у 'IAsyncResult' есть св-во 'AsyncState' - в него можно передать 1 об-т
+    // но нам нужны аж три поля - поэтому мы создаем классс
+    public class StateObject
+    {
+        public Socket WorkSocket { get; set; }
+        public byte[] Buffer = new byte[1024];
+    }
     // нужен для обновления инф-ции в текстовом поле
     delegate void AppendText(string text);
 
     public partial class MainWindow : Window
-    {
-        static string message = "";
-        static int interval = 3000;
-
-        // создаем 'thread' для прослушивания
+    {    // создаем 'thread' для прослушивания
         Thread listener;
+        Socket socket;
+        EndPoint clientEP;
+
+        IAsyncResult Res;
 
         void AppendTextToOutput(string text)
         {
-            OutputDataTB.Text = text;
+            DataTB.Text = text;
         }
 
         public MainWindow()
@@ -46,69 +53,28 @@ namespace Chat_Client_WPF
             // запускаем
             listener.Start();
         }
-
-        //void Send()
-        //{
-        //    listener.Abort(); // 1
-
-        //    while (true)
-        //    {
-        //        // в начале каждого цикла мы ждем секунду
-        //        Thread.Sleep(interval);
-
-        //        IPAddress ip = IPAddress.Parse("224.5.5.6");
-        //        IPEndPoint ep = new IPEndPoint(ip, 4567);
-        //        Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-
-        //        s.Connect(ep);
-
-        //        if (s.Connected)
-        //        {
-        //            s.Send(Encoding.ASCII.GetBytes(InputDataTB.Text));
-        //        }
-
-        //        s.Shutdown(SocketShutdown.Both);
-        //        s.Close();
-        //    }
-
-        //    listener.Start(); //2
-        //}
-
-        private void InputDataTB_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            message = InputDataTB.Text;
-        }
-
-        // будет прослушивать сообщения от сервера в потоке
         void Listen()
         {
             // этот метод будет блокировать пр-му каждую секунду, пока сервер не пришлет ответ
             while (true)
             {
-                // в начале каждого цикла мы ждем секунду
-                Thread.Sleep(interval);
-
                 Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
-                // создаем 'EndPoint' для прослушки на входящие данные на любой IP адрес, на порт 4567
+                // создаем 'EndPoint' для прослушки
                 IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 4567);
                 // IPAddress.Any - будет прослушивать все, порт как у сервера
 
                 // биндим сокет к нашему 'IPEndPoint'
                 sock.Bind(ipep);
 
-                // Присоединяемся к multicast группе 224.5.6.7
-
-                // 1 // создаем новый ip-адрес
+                // создаем новый ip-адрес
                 IPAddress ip = IPAddress.Parse("224.5.5.5");
 
-                // 2
                 sock.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(ip, IPAddress.Any));
                 // если какой-то сокет из этого ip - делает рассылку - то все остальные сокеты будут ее получать
                 // здесь мы подписываем сокет на адрес, который описывает multicast - 'ip'
                 // 'IPAddress.Any' ждем сигнал от любого адреса с этой группы, от всех, кто подписался
 
-                // Получаем данные отправленные в multicast группу.
                 byte[] buff = new byte[1024];
 
                 // здесь пр-ма встанет и будет ждать, пока не прийдет ответ от сервера
@@ -121,23 +87,79 @@ namespace Chat_Client_WPF
                 sock.Close();
             }
         }
+        //private void ReceiveCompleted(IAsyncResult ar)
+        //{
+        //    try
+        //    {
+        //        // в 'AsyncState' может наход-ся экземпляр любого класса или стр-ры
+        //        // по факту здесь нах-ся то, что мы передаем в 'BeginReceiveFrom' последним арг-ом
+        //        //StateObject so = (StateObject)ar.AsyncState;
+
+        //        // достаем из него сокет
+        //        Socket clientSocket = (Socket)ar.AsyncState;
+
+        //        // если нет клиентского сокета
+        //        if (clientSocket == null)
+        //            return;
+
+        //        // начали там, где 'BeginReceiveFrom', а здесь мы его завершаем
+        //        int bufferLength = clientSocket.EndReceiveFrom(ar, ref clientEP);
+        //        // 'EndReceiveFrom' - Завершает отложенное асинхронное чтение с определенной конечной точки
+        //        // 'Res' - Объект IAsyncResult, в котором хранятся сведения о состоянии и любые данные,
+        //        // определенные пользователем, для этой асинхронной операции
+
+        //        // получаем адрес клиента
+        //        string strClient = ((IPEndPoint)clientEP).Address.ToString();
+
+        //        byte[] Buffer = new byte[1024];
+
+        //        string str = $"Получено от {strClient}: {Encoding.Unicode.GetString(Buffer, 0, bufferLength)}";
+
+        //        DataTB.Dispatcher.BeginInvoke(new AppendText(AppendTextToOutput), str);
+        //    }
+        //    catch (SocketException)
+        //    {
+                
+        //        throw;
+        //    }
+        //    finally
+        //    {
+        //        socket.Close();
+        //    }
+        //}
 
         private void send_btn_Click(object sender, RoutedEventArgs e)
         {
-            listener.Abort();
+            // чтобы второй раз сокет не перезаписывался
+            if (socket != null)
+                return;
 
-            Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            if (DataTB.Text.Length > 0)
+            {
+                IPAddress ip = IPAddress.Parse("127.0.0.1");
+                IPEndPoint ep = new IPEndPoint(ip, 1024);
+                Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.IP);
 
-            // тк здесь мы используем UDP, а он не устанавливает постоянного соединения - 's.Connect(ep)' - не нужно,
-            // мы вместо этого у 'SendTo' и 'ReceiveTO' в качестве одного из пар-ов передаем 'EndPoint'
-            s.SendTo(Encoding.Unicode.GetBytes(InputDataTB.Text), new IPEndPoint(IPAddress.Parse("224.5.5.6"), 4567));
-            // первым арг-ом - указываем само сообщение, вторым - куда мы посылаем
+                try
+                {
+                    s.Connect(ep);
 
-            // тк у нас нет постоянного соед-ия - мы сокеты сразу закрываем
-            s.Shutdown(SocketShutdown.Send);
-            s.Close();
+                    if (s.Connected)
+                    {
+                        s.Send(Encoding.ASCII.GetBytes(DataTB.Text));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    //txt_label.AppendText(ex.ToString());
+                }
+                finally
+                {
+                    s.Shutdown(SocketShutdown.Both);
+                    s.Close();
+                }
+            }
 
-            listener.Start();
         }
     }
 }

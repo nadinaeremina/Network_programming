@@ -36,6 +36,7 @@ namespace Project_server_WPF_async
         public MainWindow()
         {
             InitializeComponent();
+
             create.WindowStartupLocation = WindowStartupLocation.CenterScreen;
         }
 
