@@ -19,64 +19,15 @@ using System.Windows.Shapes;
 
 namespace Chat_Server_WPF
 {
-    // у 'IAsyncResult' есть св-во 'AsyncState' - в него можно передать 1 об-т
-    // но нам нужны аж три поля - поэтому мы создаем классс
-    public class StateObject
-    {
-        public Socket WorkSocket { get; set; }
-        public byte[] Buffer = new byte[1024];
-    }
-
     public partial class MainWindow : Window
     {
-        // нужен для обновления инф-ции в текстовом поле
-        delegate void AppendText(string text);
-        static int interval = 1000;
-        static string message = "";
-
-        // создаем поток, который будет запускать 'MulticastSend'
-        //Thread Sender = new Thread(new ThreadStart(MulticastSend));
-        Socket socket;
-        EndPoint clientEP;
-
-        IAsyncResult Res;
-
         public MainWindow()
         {
             InitializeComponent();
-
-            // ставим поток на фон
-            //Sender.IsBackground = true;
-
-            // запускаем // приложение блокировать не будет - будет работать на фоне
-            //Sender.Start();
-        }
-
-        private void SendCompleted(IAsyncResult ar)
-        {
-            Socket socket = (Socket)ar.AsyncState;
-
-            socket.EndSend(Res);
-            socket.Shutdown(SocketShutdown.Send);
-            socket.Close();
-
-            // в 'AsyncState' может наход-ся экземпляр любого класса или стр-ры
-            // по факту здесь нах-ся то, что мы передаем в 'BeginReceiveFrom' последним арг-ом
-            //StateObject so = (StateObject)ar.AsyncState;
-
-            //so.WorkSocket = (Socket)ar.AsyncState;
-
-            //socket.EndSend(Res);
-            //socket.Shutdown(SocketShutdown.Send);
-            //socket.Close();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            // чтобы второй раз сокет не перезаписывался
-            if (socket != null)
-                return;
-
             IPAddress ip = IPAddress.Parse("127.0.0.1");
             IPEndPoint ep = new IPEndPoint(ip, 1024);
             Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.IP);
@@ -103,23 +54,15 @@ namespace Chat_Server_WPF
             }
             catch (Exception ex)
             {
-                //txt_label.AppendText(ex.ToString());
+                throw;
             }
         }
 
         public void MulticastSend()
         {
-            // этот метод будет исп-ся как потоковый // повторяться каждую секунду на фоне
-            //while (true)
-            //{
-            // в начале каждого цикла мы ждем секунду
-           // Thread.Sleep(interval);
 
             // Протокол 'MULTICAST' всегда 'UDP' 
             Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-
-            // достать IP, если нужно (будет строка соед-ия)
-            // sock.RemoteEndPoint.ToString();
 
             // устанавливаем опции
             sock.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 4);
@@ -143,7 +86,6 @@ namespace Chat_Server_WPF
             DataTB.Text = string.Empty;
 
             sock.Close();
-            //}
         }
 
         private void send_btn_Click(object sender, RoutedEventArgs e)

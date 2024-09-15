@@ -19,24 +19,12 @@ using System.Text.Json;
 
 namespace Chat_Client_WPF
 {
-    // у 'IAsyncResult' есть св-во 'AsyncState' - в него можно передать 1 об-т
-    // но нам нужны аж три поля - поэтому мы создаем классс
-    public class StateObject
-    {
-        public Socket WorkSocket { get; set; }
-        public byte[] Buffer = new byte[1024];
-    }
-
     // нужен для обновления инф-ции в текстовом поле
     delegate void AppendText(string text);
 
     public partial class MainWindow : Window
     {    // создаем 'thread' для прослушивания
         Thread listener;
-        Socket socket;
-        EndPoint clientEP;
-
-        IAsyncResult Res;
 
         void AppendTextToOutput(string text)
         {
@@ -87,7 +75,6 @@ namespace Chat_Client_WPF
 
                 json += Encoding.ASCII.GetString(buff, 0, l);
 
-
                 User user = JsonSerializer.Deserialize<User>(json);
 
                 this.Dispatcher.Invoke(new AppendText(AppendTextToOutput), user.ToString());
@@ -99,10 +86,6 @@ namespace Chat_Client_WPF
 
         private void send_btn_Click(object sender, RoutedEventArgs e)
         {
-            // чтобы второй раз сокет не перезаписывался
-            if (socket != null)
-                return;
-
             if (txt_name.Text.Length > 0)
             {
                 if (DataTB.Text.Length > 0)
@@ -128,7 +111,7 @@ namespace Chat_Client_WPF
                     }
                     catch (Exception ex)
                     {
-                        //txt_label.AppendText(ex.ToString());
+                        throw;
                     }
                 }
             }
@@ -136,11 +119,6 @@ namespace Chat_Client_WPF
             {
                 MessageBox.Show("Enter your name!");
             }
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            Listen();
         }
     }
 }
