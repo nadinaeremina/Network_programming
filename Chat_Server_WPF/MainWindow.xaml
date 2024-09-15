@@ -5,14 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Chat_Server_WPF"
         mc:Ignorable="d"
-        Title="Server" Height="450" Width="800">
+        Title="Server" Height="500" Width="800">
     <Grid>
-        <StackPanel Width="798">
-            <Button Click="Button_Click">Start</Button>
-            <TextBox x:Name="DataTB" IsReadOnly="False" 
-                   TextWrapping="Wrap" AcceptsReturn="True" Width="400" Height="355" ></TextBox>
-            <Button x:Name="send_btn" Height="44" Width="240" Click="send_btn_Click" >Send</Button>
-            <TextBox x:Name="test_txt"></TextBox>
+        <StackPanel Orientation="Horizontal">
+            <Button Height="100" Click="Button_Click" Width="200" Margin="50">Start Server</Button>
+            <StackPanel>
+                <TextBlock Margin="5" TextAlignment="Center" FontWeight="Bold" FontSize="16">Message content</TextBlock>
+                <TextBox x:Name="DataTB" IsReadOnly="True" TextWrapping="Wrap" Width="400" Height="339" ></TextBox>
+                <Button Width="100" Height="50" x:Name="send_btn" Click="send_btn_Click" >Send message</Button>
+            </StackPanel>
         </StackPanel>
     </Grid>
 </Window>

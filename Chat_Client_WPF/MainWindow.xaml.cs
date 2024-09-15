@@ -15,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Text.Json;
 
 namespace Chat_Client_WPF
 {
@@ -25,6 +26,7 @@ namespace Chat_Client_WPF
         public Socket WorkSocket { get; set; }
         public byte[] Buffer = new byte[1024];
     }
+
     // нужен для обновления инф-ции в текстовом поле
     delegate void AppendText(string text);
 
@@ -38,7 +40,7 @@ namespace Chat_Client_WPF
 
         void AppendTextToOutput(string text)
         {
-            DataTB.Text = text;
+            RecTB.Text = text;
         }
 
         public MainWindow()
@@ -75,58 +77,25 @@ namespace Chat_Client_WPF
                 // здесь мы подписываем сокет на адрес, который описывает multicast - 'ip'
                 // 'IPAddress.Any' ждем сигнал от любого адреса с этой группы, от всех, кто подписался
 
+                string json = "";
                 byte[] buff = new byte[1024];
+                int l;
 
                 // здесь пр-ма встанет и будет ждать, пока не прийдет ответ от сервера
-                sock.Receive(buff);
+                l = sock.Receive(buff);
                 // 'Receive' измеряет размер сообщения, в то время как буффер яв-ся массивом, поэтому он будет изменяться внутри метода
 
-                this.Dispatcher.Invoke(new AppendText(AppendTextToOutput), Encoding.Default.GetString(buff));
+                json += Encoding.ASCII.GetString(buff, 0, l);
+
+
+                User user = JsonSerializer.Deserialize<User>(json);
+
+                this.Dispatcher.Invoke(new AppendText(AppendTextToOutput), user.ToString());
                 // обращаемся в главном потоке
 
                 sock.Close();
             }
         }
-        //private void ReceiveCompleted(IAsyncResult ar)
-        //{
-        //    try
-        //    {
-        //        // в 'AsyncState' может наход-ся экземпляр любого класса или стр-ры
-        //        // по факту здесь нах-ся то, что мы передаем в 'BeginReceiveFrom' последним арг-ом
-        //        //StateObject so = (StateObject)ar.AsyncState;
-
-        //        // достаем из него сокет
-        //        Socket clientSocket = (Socket)ar.AsyncState;
-
-        //        // если нет клиентского сокета
-        //        if (clientSocket == null)
-        //            return;
-
-        //        // начали там, где 'BeginReceiveFrom', а здесь мы его завершаем
-        //        int bufferLength = clientSocket.EndReceiveFrom(ar, ref clientEP);
-        //        // 'EndReceiveFrom' - Завершает отложенное асинхронное чтение с определенной конечной точки
-        //        // 'Res' - Объект IAsyncResult, в котором хранятся сведения о состоянии и любые данные,
-        //        // определенные пользователем, для этой асинхронной операции
-
-        //        // получаем адрес клиента
-        //        string strClient = ((IPEndPoint)clientEP).Address.ToString();
-
-        //        byte[] Buffer = new byte[1024];
-
-        //        string str = $"Получено от {strClient}: {Encoding.Unicode.GetString(Buffer, 0, bufferLength)}";
-
-        //        DataTB.Dispatcher.BeginInvoke(new AppendText(AppendTextToOutput), str);
-        //    }
-        //    catch (SocketException)
-        //    {
-                
-        //        throw;
-        //    }
-        //    finally
-        //    {
-        //        socket.Close();
-        //    }
-        //}
 
         private void send_btn_Click(object sender, RoutedEventArgs e)
         {
@@ -134,32 +103,44 @@ namespace Chat_Client_WPF
             if (socket != null)
                 return;
 
-            if (DataTB.Text.Length > 0)
+            if (txt_name.Text.Length > 0)
             {
-                IPAddress ip = IPAddress.Parse("127.0.0.1");
-                IPEndPoint ep = new IPEndPoint(ip, 1024);
-                Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.IP);
-
-                try
+                if (DataTB.Text.Length > 0)
                 {
-                    s.Connect(ep);
+                    IPAddress ip = IPAddress.Parse("127.0.0.1");
+                    IPEndPoint ep = new IPEndPoint(ip, 1024);
+                    Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.IP);
 
-                    if (s.Connected)
+                    try
                     {
-                        s.Send(Encoding.ASCII.GetBytes(DataTB.Text));
+                        s.Connect(ep);
+
+                        if (s.Connected)
+                        {
+                            User user = new User { Name = txt_name.Text, Message = DataTB.Text };
+                            string json = JsonSerializer.Serialize(user);
+                            s.Send(Encoding.ASCII.GetBytes(json));
+                            DataTB.Text = string.Empty;
+
+                            s.Shutdown(SocketShutdown.Both);
+                            s.Close();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        //txt_label.AppendText(ex.ToString());
                     }
                 }
-                catch (Exception ex)
-                {
-                    //txt_label.AppendText(ex.ToString());
-                }
-                finally
-                {
-                    s.Shutdown(SocketShutdown.Both);
-                    s.Close();
-                }
             }
+            else
+            {
+                MessageBox.Show("Enter your name!");
+            }
+        }
 
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            Listen();
         }
     }
 }

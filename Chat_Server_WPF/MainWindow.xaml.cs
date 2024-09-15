@@ -32,19 +32,14 @@ namespace Chat_Server_WPF
         // нужен для обновления инф-ции в текстовом поле
         delegate void AppendText(string text);
         static int interval = 1000;
-        static string message = "Hello, Networkgggggggggggggggg!";
+        static string message = "";
 
         // создаем поток, который будет запускать 'MulticastSend'
         //Thread Sender = new Thread(new ThreadStart(MulticastSend));
         Socket socket;
         EndPoint clientEP;
-       
-        IAsyncResult Res;
 
-        void AppendTextToOutput(string text)
-        {
-            test_txt.Text = text;
-        }
+        IAsyncResult Res;
 
         public MainWindow()
         {
@@ -92,7 +87,6 @@ namespace Chat_Server_WPF
             try
             {
                 Socket ns = s.Accept();
-                //ns.Send(Encoding.ASCII.GetBytes("Hello, client!"));
 
                 byte[] buff = new byte[1024];
                 int l;
@@ -113,41 +107,42 @@ namespace Chat_Server_WPF
             }
         }
 
-        private void MulticastSend()
+        public void MulticastSend()
         {
             // этот метод будет исп-ся как потоковый // повторяться каждую секунду на фоне
             //while (true)
             //{
-                // в начале каждого цикла мы ждем секунду
-                //Thread.Sleep(interval);
+            // в начале каждого цикла мы ждем секунду
+           // Thread.Sleep(interval);
 
-                // Протокол 'MULTICAST' всегда 'UDP' 
-                Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            // Протокол 'MULTICAST' всегда 'UDP' 
+            Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
-                // достать IP, если нужно (будет строка соед-ия)
-                // sock.RemoteEndPoint.ToString();
+            // достать IP, если нужно (будет строка соед-ия)
+            // sock.RemoteEndPoint.ToString();
 
-                // устанавливаем опции
-                sock.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 4);
-                // 'MulticastTimeToLive' - сколько роутеров он может пройти
-                // 1 // уровень // 2 // название опции // 3 // значение 
+            // устанавливаем опции
+            sock.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 4);
+            // 'MulticastTimeToLive' - сколько роутеров он может пройти
+            // 1 // уровень // 2 // название опции // 3 // значение 
 
-                // создаем ip-адрес
-                IPAddress dest = IPAddress.Parse("224.5.5.5");
+            // создаем ip-адрес
+            IPAddress dest = IPAddress.Parse("224.5.5.5");
 
-                // создаем еще один 'sock.SetSocketOption' // это будет сокет-мультикаст
-                sock.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(dest));
-                // если какой-то сокет из этого ip - делает рассылку - то все остальные сокеты будут ее получать
+            // создаем еще один 'sock.SetSocketOption' // это будет сокет-мультикаст
+            sock.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(dest));
+            // если какой-то сокет из этого ip - делает рассылку - то все остальные сокеты будут ее получать
 
-                IPEndPoint ipep = new IPEndPoint(dest, 4567);
+            IPEndPoint ipep = new IPEndPoint(dest, 4567);
 
-                // подключаемя к этому 'IPEndPoint'
-                sock.Connect(ipep);
+            // подключаемя к этому 'IPEndPoint'
+            sock.Connect(ipep);
 
-                // посылаем сообщение
-                sock.Send(Encoding.Default.GetBytes(message));
+            // посылаем сообщение
+            sock.Send(Encoding.Default.GetBytes(DataTB.Text));
+            DataTB.Text = string.Empty;
 
-                sock.Close();
+            sock.Close();
             //}
         }
 
