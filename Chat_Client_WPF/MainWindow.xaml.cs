@@ -23,7 +23,7 @@ namespace Chat_Client_WPF
     delegate void AppendText(List<string> user);
 
     public partial class MainWindow : Window
-    {   
+    {
         // создаем 'thread' для прослушивания
         Thread listener;
 

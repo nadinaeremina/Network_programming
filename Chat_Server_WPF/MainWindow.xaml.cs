@@ -21,17 +21,18 @@ namespace Chat_Server_WPF
 {
     public partial class MainWindow : Window
     {
-        Socket s;
         public MainWindow()
         {
             InitializeComponent();
         }
 
+        Socket s;
+
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             Start();
         }
-        
+
         public void Start()
         {
             if (s == null)
@@ -43,7 +44,7 @@ namespace Chat_Server_WPF
                 s.Bind(ep);
                 s.Listen(10);
             }
-          
+
             try
             {
                 Socket ns = s.Accept();
