@@ -10,7 +10,7 @@ namespace TCP_Client
 {
     class Program
     {
-        static void Main(string[] args)
+        static async void Main(string[] args)
         {
             var ep = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5001);
 

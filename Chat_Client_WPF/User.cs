@@ -10,9 +10,5 @@ namespace Chat_Client_WPF
     {
         public string Name { get; set; }
         public string Message { get; set; }
-        public override string ToString()
-        {
-            return $"Name: {Name}\nMessage: {Message}";
-        }
     }
 }

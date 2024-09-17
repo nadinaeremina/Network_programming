@@ -20,15 +20,34 @@ using System.Text.Json;
 namespace Chat_Client_WPF
 {
     // нужен для обновления инф-ции в текстовом поле
-    delegate void AppendText(string text);
+    delegate void AppendText(List<string> user);
 
     public partial class MainWindow : Window
-    {    // создаем 'thread' для прослушивания
+    {   
+        // создаем 'thread' для прослушивания
         Thread listener;
 
-        void AppendTextToOutput(string text)
+        void AppendTextToOutput(List<string> user)
         {
-            RecTB.Text = text;
+            Random rand = new Random();
+            int color = rand.Next(150, 255);
+
+            TextBox txt1 = new TextBox();
+            TextBox txt2 = new TextBox();
+
+            txt1.IsEnabled = true;
+            txt2.IsEnabled = true;
+
+            txt1.BorderThickness = new Thickness(0);
+            txt2.BorderThickness = new Thickness(0);
+
+            txt1.Text = user[0] + ":";
+            txt1.Foreground = new SolidColorBrush(Color.FromRgb(Convert.ToByte(color), 0, 0));
+
+            txt2.Text = user[1];
+
+            RecTB.Children.Add(txt1);
+            RecTB.Children.Add(txt2);
         }
 
         public MainWindow()
@@ -77,7 +96,12 @@ namespace Chat_Client_WPF
 
                 User user = JsonSerializer.Deserialize<User>(json);
 
-                this.Dispatcher.Invoke(new AppendText(AppendTextToOutput), user.ToString());
+                List<string> user_list = new List<string>();
+
+                user_list.Add(user.Name);
+                user_list.Add(user.Message);
+
+                this.Dispatcher.Invoke(new AppendText(AppendTextToOutput), user_list);
                 // обращаемся в главном потоке
 
                 sock.Close();
@@ -111,7 +135,8 @@ namespace Chat_Client_WPF
                     }
                     catch (Exception ex)
                     {
-                        throw;
+                        MessageBox.Show("Server is not answering!");
+                        return;
                     }
                 }
             }

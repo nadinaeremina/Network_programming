@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Chat_Client_WPF"
         mc:Ignorable="d"
-        Title="Client" Height="450" Width="850">
+        Title="Client" Height="500" Width="850" WindowStartupLocation="CenterScreen">
     <Grid>
         <StackPanel Margin="0,0,0,-15">
             <TextBlock TextAlignment="Center" Height="34" FontSize="16" Margin="331,0,336,0" FontWeight="Bold">Enter your name:</TextBlock>
@@ -15,12 +15,12 @@
                     <StackPanel>
                     </StackPanel>
                     <TextBox x:Name="DataTB" IsReadOnly="False" Margin="5" Width="380"  Height="292" TextWrapping="Wrap"/>
-                    <Button x:Name="send_btn" Width="174" Content="To Send" Height="30" Click="send_btn_Click" />
+                    <Button x:Name="send_btn" Margin="10" Width="120" Content="To Send message" Height="40" Click="send_btn_Click" />
                 </StackPanel>
                 <StackPanel>
-                    <TextBlock TextAlignment="Center" FontSize="16" FontWeight="Bold">Received messages</TextBlock>
-                    <TextBox x:Name="RecTB" IsReadOnly="False" Margin="5" Width="380" Height="271" TextWrapping="Wrap"/>
-                    <TextBlock x:Name="condition_txt"/>
+                    <TextBlock TextAlignment="Center" FontSize="16" FontWeight="Bold">Received messages:</TextBlock>
+                    <StackPanel x:Name="RecTB" Height="342" Width="451">
+                    </StackPanel>
                 </StackPanel>
         </StackPanel>
         </StackPanel>

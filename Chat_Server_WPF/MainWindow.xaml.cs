@@ -21,6 +21,7 @@ namespace Chat_Server_WPF
 {
     public partial class MainWindow : Window
     {
+        Socket s;
         public MainWindow()
         {
             InitializeComponent();
@@ -28,13 +29,21 @@ namespace Chat_Server_WPF
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            IPAddress ip = IPAddress.Parse("127.0.0.1");
-            IPEndPoint ep = new IPEndPoint(ip, 1024);
-            Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.IP);
+            Start();
+        }
+        
+        public void Start()
+        {
+            if (s == null)
+            {
+                IPAddress ip = IPAddress.Parse("127.0.0.1");
+                IPEndPoint ep = new IPEndPoint(ip, 1024);
+                s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.IP);
 
-            s.Bind(ep);
-            s.Listen(10);
-
+                s.Bind(ep);
+                s.Listen(10);
+            }
+          
             try
             {
                 Socket ns = s.Accept();
@@ -60,7 +69,6 @@ namespace Chat_Server_WPF
 
         public void MulticastSend()
         {
-
             // Протокол 'MULTICAST' всегда 'UDP' 
             Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
@@ -86,10 +94,18 @@ namespace Chat_Server_WPF
             DataTB.Text = string.Empty;
 
             sock.Close();
+
+            Start();
         }
 
         private void send_btn_Click(object sender, RoutedEventArgs e)
         {
+            if (s == null)
+            {
+                MessageBox.Show("At first start the server!");
+                return;
+            }
+
             MulticastSend();
         }
     }
